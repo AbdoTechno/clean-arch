@@ -47,6 +47,44 @@ class UnknownException extends ServerException {
   UnknownException({required super.errorModel});
 }
 
+// ==================== Status Code Exceptions ====================
+
+class BadRequestException extends ServerException {
+  BadRequestException({required super.errorModel});
+}
+
+class UnauthorizedException extends ServerException {
+  UnauthorizedException({required super.errorModel});
+}
+
+class ForbiddenException extends ServerException {
+  ForbiddenException({required super.errorModel});
+}
+
+class NotFoundException extends ServerException {
+  NotFoundException({required super.errorModel});
+}
+
+class ConflictException extends ServerException {
+  ConflictException({required super.errorModel});
+}
+
+class UnprocessableEntityException extends ServerException {
+  UnprocessableEntityException({required super.errorModel});
+}
+
+class InternalServerErrorException extends ServerException {
+  InternalServerErrorException({required super.errorModel});
+}
+
+class BadGatewayException extends ServerException {
+  BadGatewayException({required super.errorModel});
+}
+
+class ServiceUnavailableException extends ServerException {
+  ServiceUnavailableException({required super.errorModel});
+}
+
 // ==================== Dio Exception Handler ====================
 
 ServerException handleDioException(DioException exception) {
@@ -66,7 +104,7 @@ ServerException handleDioException(DioException exception) {
       return BadCertificateException(errorModel: errorModel);
 
     case DioExceptionType.badResponse:
-      return BadResponseException(errorModel: errorModel);
+      return _handleBadResponse(exception.response?.statusCode, errorModel);
 
     case DioExceptionType.cancel:
       return CancelException(errorModel: errorModel);
@@ -76,10 +114,59 @@ ServerException handleDioException(DioException exception) {
 
     case DioExceptionType.unknown:
       return UnknownException(errorModel: errorModel);
+
     case DioExceptionType.transformTimeout:
       return UnknownException(errorModel: errorModel);
   }
 }
 
-ErrorModel _getErrorModel(DioException exception) =>
-    ErrorModel.fromJson(exception.response!.data);
+// ==================== Status Code Handler ====================
+
+ServerException _handleBadResponse(int? statusCode, ErrorModel errorModel) {
+  switch (statusCode) {
+    case 400:
+      return BadRequestException(errorModel: errorModel);
+
+    case 401:
+      return UnauthorizedException(errorModel: errorModel);
+
+    case 403:
+      return ForbiddenException(errorModel: errorModel);
+
+    case 404:
+      return NotFoundException(errorModel: errorModel);
+
+    case 409:
+      return ConflictException(errorModel: errorModel);
+
+    case 422:
+      return UnprocessableEntityException(errorModel: errorModel);
+
+    case 500:
+      return InternalServerErrorException(errorModel: errorModel);
+
+    case 502:
+      return BadGatewayException(errorModel: errorModel);
+
+    case 503:
+      return ServiceUnavailableException(errorModel: errorModel);
+
+    default:
+      return BadResponseException(errorModel: errorModel);
+  }
+}
+
+// ==================== Error Model Parser ====================
+
+ErrorModel _getErrorModel(DioException exception) {
+  final data = exception.response?.data;
+
+  if (data is Map<String, dynamic>) {
+    return ErrorModel.fromJson(data);
+  }
+
+  return ErrorModel(
+    status: exception.response?.statusCode,
+    errorMessage: exception.message ?? 'Something went wrong',
+  );
+}
