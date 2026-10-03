@@ -10,7 +10,7 @@ class ServerException implements Exception {
 class CacheException implements Exception {
   final String errorMessage;
 
-  CacheException({required this.errorMessage});
+  CacheException({required this.errorMessage,});
 }
 
 // ==================== Dio Exceptions ====================
