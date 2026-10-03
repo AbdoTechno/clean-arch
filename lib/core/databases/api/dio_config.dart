@@ -10,9 +10,9 @@ class DioConfig {
 
   Dio getDio() {
     final dio = Dio();
-    dio.options.baseUrl = EndPoints.baseUrl; 
-    dio.options.connectTimeout = const Duration(seconds: 10);
-    dio.options.receiveTimeout = const Duration(seconds: 10);
+    dio.options.baseUrl = EndPoints.baseUrl;
+    dio.options.connectTimeout = const Duration(seconds: 20);
+    dio.options.receiveTimeout = const Duration(seconds: 20);
     dio.options.headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',

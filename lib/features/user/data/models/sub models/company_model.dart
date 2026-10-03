@@ -13,13 +13,17 @@ class CompanyModel {
 
   factory CompanyModel.fromJson(Map<String, dynamic> json) {
     return CompanyModel(
-      name: json[Apikeys.userCompany],
+      name: json[Apikeys.name],
       catchPhrase: json[Apikeys.userCatchPhrase],
       bs: json[Apikeys.userBs],
     );
   }
-  Map<String, String> toJson() {
-    return {'name': name, 'catchPhrase': catchPhrase, 'bs': bs};
+
+  Map<String, dynamic> toJson() {
+    return {
+      Apikeys.name: name,
+      Apikeys.userCatchPhrase: catchPhrase,
+      Apikeys.userBs: bs,
+    };
   }
 }
-
