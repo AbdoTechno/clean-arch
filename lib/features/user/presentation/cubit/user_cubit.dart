@@ -18,7 +18,8 @@ part 'user_state.dart';
 class UserCubit extends Cubit<UserState> {
   UserCubit() : super(UserInitial());
 
-  eitherFailureOrUser(int userId) async {
+  Future<void> eitherFailureOrUser(int userId) async {
+    if (isClosed || state is UserLoading) return;
     emit(UserLoading());
     final failureOrUser = await GetUser(
       repository: UserRepositoryImpl(
@@ -29,6 +30,7 @@ class UserCubit extends Cubit<UserState> {
         localDataSource: UserLocalDataSource(cacheHelper: CacheHelper()),
       ),
     ).call(params: UserParams(userId: userId.toString()));
+    if (isClosed) return;
     failureOrUser.fold(
       (failure) => emit(UserError(failure: failure)),
       (user) => emit(UserLoaded(userEntity: user)),

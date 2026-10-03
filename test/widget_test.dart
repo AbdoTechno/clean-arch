@@ -1,30 +1,56 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
+import 'package:clean_arch/app.dart';
+import 'package:clean_arch/core/errors/failure.dart';
+import 'package:clean_arch/features/user/presentation/cubit/user_cubit.dart';
+import 'package:clean_arch/features/user/presentation/pages/user_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:clean_arch/main.dart';
+class TestUserCubit extends UserCubit {
+  final List<int> requests = [];
+
+  @override
+  Future<void> eitherFailureOrUser(int userId) async {
+    requests.add(userId);
+    emit(UserLoading());
+  }
+
+  void fail() => emit(UserError(failure: Failure(errMessage: 'No connection')));
+}
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('App opens the profile search instead of the counter', (
+    tester,
+  ) async {
     await tester.pumpWidget(const MyApp());
+    expect(find.text('People'), findsOneWidget);
+    expect(find.text('Meet someone new'), findsOneWidget);
+    expect(find.text('Find profile'), findsOneWidget);
+  });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+  testWidgets('Validates IDs, displays loading and retries failed searches', (
+    tester,
+  ) async {
+    final cubit = TestUserCubit();
+    addTearDown(cubit.close);
+    await tester.pumpWidget(MaterialApp(home: UserPage(cubit: cubit)));
+    await tester.enterText(find.byType(TextFormField), '0');
+    await tester.tap(find.text('Find profile'));
     await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.text('Enter a user ID from 1 to 10'), findsOneWidget);
+    expect(cubit.requests, isEmpty);
+    await tester.enterText(find.byType(TextFormField), '3');
+    await tester.tap(find.text('Find profile'));
+    await tester.pump();
+    expect(cubit.requests, [3]);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    cubit.fail();
+    await tester.pump();
+    expect(find.text('No connection'), findsOneWidget);
+    await tester.ensureVisible(find.text('Try again'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Try again'));
+    await tester.pump();
+    expect(cubit.requests, [3, 3]);
+    expect(tester.takeException(), isNull);
   });
 }
