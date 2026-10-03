@@ -13,9 +13,9 @@ class UserRepositoryImpl extends UserRepository {
   final UserRemoteDataSource remoteDataSource;
   final UserLocalDataSource localDataSource;
   UserRepositoryImpl(
-    this.networkInfo,
-    this.remoteDataSource,
-    this.localDataSource,
+  {  required this.networkInfo,
+    required this.remoteDataSource,
+    required this.localDataSource,}
   );
   @override
   Future<Either<Failure, UserEntity>> getUser({UserParams? params}) async {
